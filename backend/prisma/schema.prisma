@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Plan {
+  id       Int    @id @default(autoincrement())
+  title    String
+  price    Float
+  duration Int
+
+  subscriptions Subscription[] // Relation to Subscription
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+  phone    String
+
+  profileImage String? // ← Optional profile image URL
+
+  subscriptions     Subscription[]
+  verificationCodes VerificationCode[]
+  nutritionEntries  NutritionEntry[]
+}
+
+model Subscription {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique // ✅ ensure one-to-one
+  planId    Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  plan Plan @relation(fields: [planId], references: [id])
+}
+
+model VerificationCode {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  code      String
+  expiresAt DateTime
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model NutritionEntry {
+  id       Int      @id @default(autoincrement())
+  userId   Int
+  date     DateTime
+  calories Float
+  protein  Float
+
+  user User @relation(fields: [userId], references: [id])
+}
+model Workout {
+  id        Int               @id @default(autoincrement())
+  title     String
+  type      String
+  difficulty String
+  duration  Int
+  calories  Int
+  image     String
+
+  routines  WorkoutRoutine[] // ⬅️ one-to-many directly
+}
+
+model WorkoutRoutine {
+  id           Int    @id @default(autoincrement())
+  name         String
+  sets         Int
+  reps         Int
+  rest         Int
+  calorieRatio Float
+  workoutId    Int    // ⬅️ FK to Workout
+
+  workout      Workout @relation(fields: [workoutId], references: [id])
+}

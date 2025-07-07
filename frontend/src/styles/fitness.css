@@ -1,0 +1,120 @@
+.main-container {
+  padding: 20px;
+  color: white;
+  background-color: #292929;
+}
+
+.section-title {
+  font-size: 24px;
+  margin-bottom: 16px;
+  color: #fbbf24;
+}
+
+.nutrition-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.food-input {
+  flex: 1;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.05);
+  color: white;
+  border: 1px solid #fbbf24;
+}
+
+/* Base Button Style */
+.add-button,
+.submit-button,
+.confirm-btn,
+.cancel-btn {
+  padding: 8px 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #fbbf24;
+  color: #292929;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Submit button (same as add-button for consistency) */
+.submit-button {
+  margin-top: 12px;
+}
+
+/* Cancel Button specific styling */
+.cancel-btn {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: white;
+  border: 1px solid white;
+}
+
+/* Hover Effects */
+.add-button:hover,
+.submit-button:hover,
+.confirm-btn:hover {
+  background-color: #292929;
+  color: #fbbf24;
+  border: 1px solid #fbbf24;
+}
+
+.cancel-btn:hover {
+  background-color: #fbbf24;
+  color: #292929;
+  border: 1px solid #fbbf24;
+}
+
+.nutrition-summary {
+  background: #1a1a2e;
+  padding: 16px;
+  border-radius: 8px;
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* This will center child items like the button */
+}
+
+
+.total-line {
+  font-weight: bold;
+  margin-top: 12px;
+  color: #fbbf24;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-box {
+  background: #292929;
+  padding: 20px 30px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  color: white;
+}
+
+.modal-box p {
+  font-size: 16px;
+  margin-bottom: 16px;
+  color: #fbbf24;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
