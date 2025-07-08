@@ -92,4 +92,55 @@ router.get('/:id/routines', async (req, res) => {
   }
 });
 
+router.post('/complete', async (req, res) => {
+  const { userId, workoutId } = req.body;
+
+  try {
+    const workout = await prisma.workout.findUnique({ where: { id: workoutId } });
+    if (!workout) {
+      return res.status(404).json({ error: 'Workout not found' });
+    }
+
+    const record = await prisma.workoutRecord.create({
+      data: {
+        userId,
+        workoutId,
+        calories: workout.calories,
+      },
+    });
+
+    res.status(201).json(record);
+  } catch (err) {
+    console.error('❌ Error completing workout:', err);
+    res.status(500).json({ error: 'Failed to complete workout' });
+  }
+});
+
+//this route is used to track the daily burned calories
+router.get('/calories/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  try {
+    const calories = await prisma.workoutRecord.aggregate({
+      _sum: {
+        calories: true,
+      },
+      where: {
+        userId: Number(userId),
+        completedAt: {
+          gte: today,
+        },
+      },
+    });
+
+    res.json({ totalCaloriesBurnedToday: calories._sum.calories || 0 });
+  } catch (err) {
+    console.error('Error calculating daily calories:', err);
+    res.status(500).json({ error: 'Failed to calculate calories' });
+  }
+});
+
+
 export default router;

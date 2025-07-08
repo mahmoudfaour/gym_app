@@ -1,0 +1,101 @@
+.activities-wrapper {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.activities-title {
+  font-size: 2rem;
+  color: #fff;
+  margin-bottom: 30px;
+}
+
+.activities-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+}
+
+.activity-card {
+  position: relative;
+  width: 280px;
+  height: 180px;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  transition: transform 0.3s ease;
+}
+
+.activity-card:hover {
+  transform: scale(1.05);
+}
+
+.activity-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.activity-card-overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75), transparent);
+  color: #facc15;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.activity-input-box {
+  margin-top: 30px;
+  background: #1f1f1f;
+  border-radius: 12px;
+  padding: 20px;
+  width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.activity-input-box input {
+  width: 100%;
+  padding: 8px 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+}
+
+.activity-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.confirm-btn, .cancel-btn {
+  flex: 1;
+  padding: 10px;
+  font-weight: bold;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  height: 37px;
+  width: 125px;
+}
+
+.confirm-btn {
+  background-color: #facc15;
+  color: #000;
+}
+
+.cancel-btn {
+  background-color: #ef4444;
+  color: white;
+  margin-top: 11.3px;
+}

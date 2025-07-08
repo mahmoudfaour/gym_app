@@ -51,9 +51,15 @@ async function createWorkoutWithCalories({
 }
 
 async function main() {
-  await prisma.workoutRoutine.deleteMany();
-  await prisma.workout.deleteMany();
-  await prisma.plan.deleteMany();
+   // Delete in the correct order to avoid foreign key constraint errors
+await prisma.workoutRecord.deleteMany();
+await prisma.activityRecord.deleteMany();
+await prisma.subscription.deleteMany(); // ⬅️ Must come before deleting plans
+await prisma.workoutRoutine.deleteMany();
+await prisma.workout.deleteMany();
+await prisma.plan.deleteMany();
+await prisma.activity.deleteMany();
+
 
   await prisma.plan.createMany({
     data: [
@@ -156,8 +162,19 @@ async function main() {
       { name: 'Seated Row Machine', sets: 4, reps: 12, rest: 60, calorieRatio: 0.2 },
     ],
   });
+  
+  await prisma.activity.createMany({
+  data: [
+    { title: 'Hiking', image: '/images/activities/hiking.jpg', caloriesPerMinute: 6.0 },
+    { title: 'Football', image: '/images/activities/football.jpg', caloriesPerMinute: 7.0 },
+    { title: 'Basketball', image: '/images/activities/basketball.jpg', caloriesPerMinute: 6.5 },
+    { title: 'Running', image: '/images/activities/running.jpg', caloriesPerMinute: 8.0 },
+    { title: 'Swimming', image: '/images/activities/swimming.jpg', caloriesPerMinute: 7.5 },
+  ],
+});
 
-  console.log('✅ Seed completed');
+console.log('✅ Seed completed');
+
 }
 
 main()

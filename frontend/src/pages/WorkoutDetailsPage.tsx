@@ -1,4 +1,3 @@
-// src/pages/WorkoutDetailsPage.tsx
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
@@ -10,7 +9,7 @@ interface Routine {
   sets: number;
   reps: number;
   rest: number;
-  calorieRatio: number; // 💡 Now included
+  calorieRatio: number;
 }
 
 interface Workout {
@@ -28,6 +27,7 @@ const WorkoutDetailsPage = () => {
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [loading, setLoading] = useState(true);
+  const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
     const fetchWorkoutData = async () => {
@@ -46,11 +46,28 @@ const WorkoutDetailsPage = () => {
     fetchWorkoutData();
   }, [id]);
 
+  const handleCompleteWorkout = async () => {
+    try {
+      const userId = 1; // 🔐 Replace with real user ID from auth/session
+      await axios.post('http://localhost:5000/api/workouts/complete', {
+        userId,
+        workoutId: workout?.id,
+        calories: workout?.calories,
+      });
+      setCompleted(true);
+      alert('✅ Workout completed and recorded!');
+    } catch (error) {
+      console.error('Error completing workout:', error);
+      alert('❌ Failed to record workout.');
+    }
+  };
+
   if (loading) return <p className="loading">Loading workout...</p>;
   if (!workout) return <p className="loading">Workout not found.</p>;
 
   return (
     <div className="workout-details-container">
+      {/* 🖼️ Banner Section */}
       <div
         className="workout-details-banner"
         style={{ backgroundImage: `url(${workout.image})` }}
@@ -65,11 +82,12 @@ const WorkoutDetailsPage = () => {
         </div>
       </div>
 
+      {/* 📋 Routine Details */}
       <div className="workout-details-content">
-        <h2>Workout Routine</h2>
+        <h2 style={{ marginBottom: '20px' }}>Workout Routine</h2>
         <ul className="routine-list">
           {routines.map((r) => (
-            <li key={r.id}>
+            <li key={r.id} style={{ marginBottom: '10px' }}>
               <strong>{r.name}</strong>: {r.sets} sets × {r.reps} reps (Rest {r.rest}s)
               <br />
               <span style={{ color: '#fbbf24' }}>
@@ -78,6 +96,19 @@ const WorkoutDetailsPage = () => {
             </li>
           ))}
         </ul>
+
+        {/* ✅ Complete Button */}
+        {!completed ? (
+          <div style={{ textAlign: 'center', marginTop: '40px' }}>
+            <button className="create-workout-btn" onClick={handleCompleteWorkout}>
+              ✅ Complete Workout
+            </button>
+          </div>
+        ) : (
+          <p style={{ textAlign: 'center', marginTop: '30px', color: 'green' }}>
+            ✅ Workout completed and saved!
+          </p>
+        )}
       </div>
     </div>
   );

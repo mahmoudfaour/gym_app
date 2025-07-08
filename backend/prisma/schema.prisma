@@ -30,10 +30,18 @@ model User {
   phone    String
 
   profileImage String? // ← Optional profile image URL
+  
+  height   Int?    // ✅ Optional
+  weight   Int?    // ✅ Optional
+  age      Int?    // ✅ Optional
 
   subscriptions     Subscription[]
   verificationCodes VerificationCode[]
   nutritionEntries  NutritionEntry[]
+  workoutRecords     WorkoutRecord[] // ✅ Add this line
+  activityRecords ActivityRecord[]
+
+
 }
 
 model Subscription {
@@ -74,6 +82,8 @@ model Workout {
   image     String
 
   routines  WorkoutRoutine[] // ⬅️ one-to-many directly
+  workoutRecords  WorkoutRecord[] // ✅ Add this line
+
 }
 
 model WorkoutRoutine {
@@ -87,3 +97,36 @@ model WorkoutRoutine {
 
   workout      Workout @relation(fields: [workoutId], references: [id])
 }
+
+model WorkoutRecord {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  workoutId  Int
+  completedAt DateTime @default(now())
+  calories   Int
+
+  user    User    @relation(fields: [userId], references: [id])
+  workout Workout @relation(fields: [workoutId], references: [id])
+}
+
+model Activity {
+  id                Int                @id @default(autoincrement())
+  title             String
+  image             String
+  caloriesPerMinute Float
+
+  activityRecords   ActivityRecord[]
+}
+
+model ActivityRecord {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  activityId Int
+  duration   Int
+  calories   Float
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id])
+  activity Activity @relation(fields: [activityId], references: [id])
+}
+
