@@ -47,13 +47,26 @@ const WorkoutDetailsPage = () => {
   }, [id]);
 
   const handleCompleteWorkout = async () => {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      alert('You must be logged in to complete a workout.');
+      return;
+    }
+
     try {
-      const userId = 1; // 🔐 Replace with real user ID from auth/session
-      await axios.post('http://localhost:5000/api/workouts/complete', {
-        userId,
-        workoutId: workout?.id,
-        calories: workout?.calories,
-      });
+      await axios.post(
+        'http://localhost:5000/api/workouts/complete',
+        {
+          workoutId: workout?.id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       setCompleted(true);
       alert('✅ Workout completed and recorded!');
     } catch (error) {

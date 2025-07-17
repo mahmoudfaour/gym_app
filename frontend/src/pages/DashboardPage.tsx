@@ -54,6 +54,24 @@ const DashboardPage: React.FC = () => {
 
   const [showPopup, setShowPopup] = useState(false);
 
+  // Helper for BMI calculation
+  const calculateBMI = (weight: number, height: number): string => {
+    if (!weight || !height) return 'N/A';
+    const heightInM = height / 100;
+    const bmi = weight / (heightInM * heightInM);
+    return bmi.toFixed(1);
+  };
+
+  const getNeedleRotation = (bmiStr: string): number => {
+    const bmi = parseFloat(bmiStr);
+    if (isNaN(bmi)) return 0;
+
+    const minBMI = 13;
+    const maxBMI = 37;
+    const clampedBMI = Math.max(minBMI, Math.min(bmi, maxBMI));
+    return ((clampedBMI - minBMI) / (maxBMI - minBMI)) * 180 - 90;
+  };
+
   useEffect(() => {
     const fetchUserAndMetrics = async () => {
       const token = localStorage.getItem('token');
@@ -67,18 +85,26 @@ const DashboardPage: React.FC = () => {
         const userId = decoded.userId;
 
         const [userRes, metricsRes] = await Promise.all([
-          api.get(`/users/${userId}`),
-          api.get(`/dashboard/${userId}/metrics`),
+          api.get(`/users/${userId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          api.get(`/dashboard/metrics`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
         ]);
 
-        setUser(userRes.data);
+        const userData = userRes.data;
+        setUser(userData);
         setMetrics(metricsRes.data);
 
+        const height = userData.height || '';
+        const weight = userData.weight || '';
+
         setForm({
-          height: userRes.data.height?.toString() || '',
-          weight: userRes.data.weight?.toString() || '',
-          age: userRes.data.age?.toString() || '',
-          bmi: '',
+          height: height.toString(),
+          weight: weight.toString(),
+          age: userData.age?.toString() || '',
+          bmi: calculateBMI(weight, height),
         });
       } catch (error) {
         console.error(error);
@@ -97,31 +123,6 @@ const DashboardPage: React.FC = () => {
       setForm((prev) => ({ ...prev, bmi }));
     }
   }, [form.height, form.weight]);
-
-  const calculateBMI = (weight: number, height: number): string => {
-    if (!weight || !height) return 'N/A';
-    const heightInM = height / 100;
-    const bmi = weight / (heightInM * heightInM);
-    return bmi.toFixed(1);
-  };
-
-const getNeedleRotation = (bmiStr: string): number => {
-  const bmi = parseFloat(bmiStr);
-  if (isNaN(bmi)) return 0;
-
-  // Adjusted range to visually fit the chart better
-  const minBMI = 13;
-  const maxBMI = 37;
-
-  const clampedBMI = Math.max(minBMI, Math.min(bmi, maxBMI));
-
-  // Map to -90 to +90 degrees
-  const degree = ((clampedBMI - minBMI) / (maxBMI - minBMI)) * 180 - 90;
-
-  return degree;
-};
-
-
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -146,14 +147,21 @@ const getNeedleRotation = (bmiStr: string): number => {
   };
 
   const handleUserUpdate = async () => {
+    const { height, weight, age } = form;
+
+    if (!height || !weight || !age) {
+      alert('Please fill in all fields');
+      return;
+    }
+
     const token = localStorage.getItem('token');
     try {
       const res = await api.patch(
         `/users/${user?.id}`,
         {
-          height: parseInt(form.height),
-          weight: parseInt(form.weight),
-          age: parseInt(form.age),
+          height: parseInt(height),
+          weight: parseInt(weight),
+          age: parseInt(age),
         },
         {
           headers: { Authorization: `Bearer ${token}` },

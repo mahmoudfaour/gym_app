@@ -92,20 +92,31 @@ router.get('/:id/routines', async (req, res) => {
   }
 });
 
-router.post('/complete', async (req, res) => {
-  const { userId, workoutId } = req.body;
+import { authenticate, AuthRequest } from '../middlewares/authMiddleware';
+
+router.post('/complete', authenticate, async (req: AuthRequest, res) => {
+  const { workoutId } = req.body;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Missing user ID from token' });
+  }
 
   try {
-    const workout = await prisma.workout.findUnique({ where: { id: workoutId } });
+    const workout = await prisma.workout.findUnique({
+      where: { id: workoutId },
+    });
+
     if (!workout) {
       return res.status(404).json({ error: 'Workout not found' });
     }
 
     const record = await prisma.workoutRecord.create({
       data: {
-        userId,
+        userId, // ✅ now definitely a number
         workoutId,
         calories: workout.calories,
+        completedAt: new Date(),
       },
     });
 
@@ -116,9 +127,15 @@ router.post('/complete', async (req, res) => {
   }
 });
 
+
 //this route is used to track the daily burned calories
-router.get('/calories/:userId', async (req, res) => {
-  const { userId } = req.params;
+router.get('/calories/me', authenticate, async (req: AuthRequest, res) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Missing user ID from token' });
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -128,7 +145,7 @@ router.get('/calories/:userId', async (req, res) => {
         calories: true,
       },
       where: {
-        userId: Number(userId),
+        userId,
         completedAt: {
           gte: today,
         },

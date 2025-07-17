@@ -1,18 +1,23 @@
-// routes/dashboardRoutes.ts
+// src/routes/dashboardRoutes.ts
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authenticate } from '../middlewares/authMiddleware'; // Adjust this path if needed
+import { authenticate, AuthRequest } from '../middlewares/authMiddleware';
 
 const router = Router();
 const prisma = new PrismaClient();
 
-router.get('/:id/metrics', authenticate, async (req, res) => {
-  const userId = Number(req.params.id);
+// ✅ SECURE: Get dashboard metrics for the logged-in user
+router.get('/metrics', authenticate, async (req: AuthRequest, res) => {
+  const userId = req.user?.id;
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized: missing user ID' });
+  }
+
+  const now = new Date();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
+  tomorrow.setUTCDate(today.getUTCDate() + 1);
 
   try {
     const [nutritionToday, workoutCalories, activityCalories] = await Promise.all([
@@ -25,11 +30,17 @@ router.get('/:id/metrics', authenticate, async (req, res) => {
       }),
       prisma.workoutRecord.aggregate({
         _sum: { calories: true },
-        where: { userId },
+        where: {
+          userId,
+          completedAt: { gte: today, lt: tomorrow },
+        },
       }),
       prisma.activityRecord.aggregate({
         _sum: { calories: true },
-        where: { userId },
+        where: {
+          userId,
+          createdAt: { gte: today, lt: tomorrow },
+        },
       }),
     ]);
 
@@ -42,14 +53,51 @@ router.get('/:id/metrics', authenticate, async (req, res) => {
       dailyProtein: nutritionToday._sum.protein ?? 0,
     });
   } catch (err) {
-    console.error(err);
+    console.error('Error fetching dashboard metrics:', err);
     res.status(500).json({ error: 'Failed to fetch dashboard metrics' });
   }
 });
 
-
-router.get('/test', (req, res) => {
+// ✅ Simple test route to confirm this file is mounted
+router.get('/test', (_req, res) => {
   res.send('Dashboard route works ✅');
+});
+
+// ✅ Optional debug route (keep if needed)
+router.get('/debug', authenticate, async (req: AuthRequest, res) => {
+  const userId = req.user?.id;
+
+  const now = new Date();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const tomorrow = new Date(today);
+  tomorrow.setUTCDate(today.getUTCDate() + 1);
+
+  const workoutRecords = await prisma.workoutRecord.findMany({
+    where: {
+      userId,
+      completedAt: {
+        gte: today,
+        lt: tomorrow,
+      },
+    },
+  });
+
+  const activityRecords = await prisma.activityRecord.findMany({
+    where: {
+      userId,
+      createdAt: {
+        gte: today,
+        lt: tomorrow,
+      },
+    },
+  });
+
+  res.json({
+    today: today.toISOString(),
+    tomorrow: tomorrow.toISOString(),
+    workoutRecords,
+    activityRecords,
+  });
 });
 
 export default router;
