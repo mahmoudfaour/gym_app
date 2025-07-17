@@ -31,16 +31,25 @@ const ActivitiesPage: React.FC = () => {
     if (!selectedActivity || !duration) return;
 
     try {
-      await axios.post('http://localhost:5000/api/activities/record', {
-        userId: 1, // Replace with actual authenticated user ID
-        activityId: selectedActivity.id,
-        duration: Number(duration),
-      });
+      const token = localStorage.getItem('token');
+      await axios.post(
+        'http://localhost:5000/api/activities/record',
+        {
+          activityId: selectedActivity.id,
+          duration: Number(duration),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       alert('Activity recorded successfully!');
       setSelectedActivity(null);
       setDuration('');
     } catch (err) {
       console.error('Failed to record activity:', err);
+      alert('Failed to record activity');
     }
   };
 
@@ -53,12 +62,14 @@ const ActivitiesPage: React.FC = () => {
           <div
             key={activity.id}
             className="activity-card"
-            style={{ backgroundImage: `url(${activity.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+            style={{
+              backgroundImage: `url(${activity.image})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
             onClick={() => setSelectedActivity(activity)}
           >
-            <div className="activity-card-overlay">
-              {activity.title}
-            </div>
+            <div className="activity-card-overlay">{activity.title}</div>
           </div>
         ))}
       </div>
@@ -74,8 +85,12 @@ const ActivitiesPage: React.FC = () => {
             onChange={(e) => setDuration(e.target.value)}
           />
           <div className="activity-buttons">
-            <button className="confirm-btn" onClick={handleConfirm}>✅ Confirm</button>
-            <button className="cancel-btn" onClick={() => setSelectedActivity(null)}>❌ Cancel</button>
+            <button className="confirm-btn" onClick={handleConfirm}>
+              ✅ Confirm
+            </button>
+            <button className="cancel-btn" onClick={() => setSelectedActivity(null)}>
+              ❌ Cancel
+            </button>
           </div>
         </div>
       )}

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { authenticate, AuthRequest } from '../middlewares/authMiddleware';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -16,8 +17,13 @@ router.get('/', async (_req, res) => {
 });
 
 // ✅ POST /api/activities/record - Log an activity performed by a user
-router.post('/record', async (req, res) => {
-  const { userId, activityId, duration } = req.body;
+router.post('/record', authenticate, async (req: AuthRequest, res) => {
+  const { activityId, duration } = req.body;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized: Missing user ID' });
+  }
 
   try {
     const activity = await prisma.activity.findUnique({
